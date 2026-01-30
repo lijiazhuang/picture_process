@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智图寻宝</title>
+    <style>
+        :root {
+            --primary-color: #e5e9ed;
+            --success-color: #67C23A;
+            --warning-color: #E6A23C;
+            --danger-color: #F56C6C;
+            --text-color: #303133;
+            --border-color: #161617;
+            --container-padding: 40px;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: #f5f7fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .company-logo {
+            position: absolute;
+            top: 10px; /* 距离容器顶部间距 */
+            right: 10px; /* 距离容器右侧间距 */
+            height: 50px;
+            z-index: 100;
+            padding: 8px;
+            background: white;
+            border-radius: 8px 8px 8px 8px;
+            box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.08);
+            /* 移除旧定位属性 */
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 30px auto 0;
+            background: white;
+            padding: var(--container-padding);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            min-height: calc(100vh - 100px);
+            position: relative;
+            background-image: url("../pictures/bg.png");
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .title-logo {
+            height: 40px; /* 根据你的图片调整高度 */
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .title-divider {
+            height: 40px;
+            width: 3px;
+            background-color: var(--border-color);
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0 0 0 0;
+            padding-bottom: 0;
+            border-bottom: 0 solid var(--primary-color);
+            display: inline-block;
+            width: 100%;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .upload_button {
+            background-image: url('../pictures/upload-icon.png');
+            background-size: 20px;
+            background-repeat: no-repeat;
+            background-position: 10px center;
+            padding-left: 40px;
+        }
+
+        .denoising_button {
+            background-image: url('../pictures/denoise-icon.png');
+            background-size: 20px;
+            background-repeat: no-repeat;
+            background-position: 10px center;
+            padding-left: 40px;
+        }
+
+        .classification_button {
+            background-image: url('../pictures/classify-icon.png');
+            background-size: 20px;
+            background-repeat: no-repeat;
+            background-position: 10px center;
+            padding-left: 40px;
+        }
+
+        .similarity_button {
+            background-image: url('../pictures/similarity-icon.png');
+            background-size: 20px;
+            background-repeat: no-repeat;
+            background-position: 10px center;
+            padding-left: 40px;
+        }
+
+        /* 确保所有按钮变体都有背景 */
+        .upload_button,
+        .denoising_button,
+        .classification_button,
+        .similarity_button {
+            /*background-image: linear-gradient(145deg, var(--primary-color), #a9b9cc);*/
+            color: #574d4d;
+        }
+
+        button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            border: none; /* 移除边框 */
+            /* 设置背景色 */
+            flex: 1; /* 让按钮均匀分布 */
+            min-width: 120px; /* 设置最小宽度 */
+            text-align: center;
+            background: linear-gradient(145deg, var(--primary-color), #314a67);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(145deg, #a9b9cc, var(--primary-color));
+        }
+
+        .preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .preview-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 10px;
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .preview-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .preview-image,
+        .noised-image,
+        .denoising-image {
+            width: 100%;
+            height: 192px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: white;
+            object-fit: contain;
+            margin-bottom: 0;
+        }
+
+        #image-upload {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 25px;
+            transition: border-color 0.3s;
+        }
+
+
+        #image-upload:hover {
+            border-color: #ed8308;
+        }
+
+        #result-text {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            min-height: 20px;
+            background: #f8f9fa;
+        }
+
+        .similar-images {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            justify-content: space-between;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .similar-images img {
+            width: 100%;
+            height: 160px;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="{{ url_for('serve_logo', filename='logo.jpg') }}" alt="Company Logo" class="company-logo">
+
+    <div class="title-container">
+        <img src="{{ url_for('serve_pictures', filename='图片识别.png') }}"
+             alt="图片识别"
+             class="title-logo">
+        <div class="title-divider"></div>
+        <h1>智能商品识别系统</h1>
+    </div>
+
+    <input type="file" id="image-upload" accept="image/*">
+
+    <div class="button-group">
+        <button id="upload_button" class="upload_button">上传图片</button>
+        <button id="denoising_button" class="denoising_button">图像去噪</button>
+        <button id="classification_button" class="classification_button">商品分类</button>
+        <button id="similarity_button" class="similarity_button">相似商品</button>
+    </div>
+
+    <div class="preview-container">
+        <div class="preview-card">
+            <h3>原始图片</h3>
+            <img class="preview-image" id="image-preview" src="" alt="Image Preview">
+        </div>
+        <div class="preview-card">
+            <h3>噪声图片</h3>
+            <img class="noised-image" id="image-noised" src="" alt="Denoised Image">
+        </div>
+        <div class="preview-card">
+            <h3>去噪结果</h3>
+            <img class="denoising-image" id="image-denoising" src="" alt="Denoised Image">
+        </div>
+    </div>
+
+    <div>
+        <h3>分类结果</h3>
+        <textarea id="result-text" rows="1" readonly></textarea>
+    </div>
+
+    <h3>相似商品推荐</h3>
+    <div class="similar-images" id="similar-images"></div>
+</div>
+
+<!-- 原script内容保持不变 -->
+
+<script>
+    const fileInput = document.getElementById('image-upload');
+    const imagePreview = document.getElementById('image-preview');
+    const imageNoised = document.getElementById('image-noised'); // 新增去噪图片引用
+    const imageDenoising = document.getElementById('image-denoising'); // 新增去噪图片引用
+    const similarImagesDiv = document.getElementById('similar-images');
+
+    document.getElementById('upload_button').onclick = function () {
+
+        if (fileInput.files.length === 0) {
+            alert("请先选择一张图片！");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            imagePreview.src = e.target.result;
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+    }
+
+    document.getElementById('denoising_button').onclick = function () {
+        console.log('=============> 去噪 <=============');
+
+        if (!imagePreview.src.startsWith("data:image")) {
+            alert("请先选择一张图片！");
+            return;
+        }
+
+
+        fetch(imagePreview.src)
+            .then(response => response.blob())
+            .then(blob => {
+                const formData = new FormData();
+                formData.append('image', blob);
+
+                // 发送请求
+                fetch('/denoising', {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // 更新去噪图片的src
+                        imageNoised.src = `data:image/png;base64,${data.noisy_img}`;
+                        imageDenoising.src = `data:image/png;base64,${data.denoised_image}`;
+                    })
+                    .catch(error => {
+                        console.error('错误:', error);
+                    });
+            });
+    };
+
+    document.getElementById('classification_button').onclick = function () {
+        console.log('=============> 分类 <=============');
+
+        if (!imageDenoising.src.startsWith("data:image")) {
+            alert("请先去噪！");
+            return;
+        }
+
+        fetch(imageDenoising.src)
+            .then(response => response.blob())
+            .then(blob => {
+                const formData = new FormData();
+                formData.append('image', blob);
+                fetch('/classification', {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then(response => response.text())
+                    .then(text => {
+                        document.getElementById('result-text').value = text;
+                    })
+                    .catch(error => {
+                        console.error('错误:', error);
+                    });
+            });
+    };
+
+    document.getElementById('similarity_button').onclick = function () {
+
+        console.log('=============> 相似度检索 <=============');
+
+
+        if (!imageDenoising.src.startsWith("data:image")) {
+            alert("请先去噪！");
+            return;
+        }
+
+        // 将 imageDenoising.src 转换为 Blob
+        fetch(imageDenoising.src)
+            .then(response => response.blob())
+            .then(blob => {
+                const formData = new FormData();
+                formData.append('image', blob);
+
+                // 发送请求到后端
+                fetch('/simimages', {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // 清空之前的相似图片
+                        similarImagesDiv.innerHTML = '';
+
+                        // 显示相似的图片
+                        console.log(data.indices_list);
+                        data.indices_list.forEach(index => {
+                            const img = document.createElement('img');
+                            img.src = `dataset/${index}.jpg`;  // 假设输出图片的命名规则为 index.jpg
+                            similarImagesDiv.appendChild(img);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('错误:', error);
+                    });
+            })
+            .catch(error => {
+                console.error('错误:', error);
+            });
+    };
+</script>
+</body>
+</html>

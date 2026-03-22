@@ -58,3 +58,10 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(DENOiSER_MODEL_NAME))
     model.to(device)
     test(model,test_loader,device)
+
+    print("--------------------开始测试模型--------------------")
+    loss=nn.MSELoss()
+    test_loss, test_psnr = step_test(model, test_loader, loss, device)
+    # 打印训练信息
+    print(f"  Test Loss (MSE):  {test_loss:.6f}")
+    print(f"  Test PSNR:        {test_psnr:.2f} dB")
